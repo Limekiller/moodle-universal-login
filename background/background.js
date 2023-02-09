@@ -8,12 +8,12 @@ chrome.runtime.onMessage.addListener(
 
         // Send initial post request to Moodle site with credentials
         // This might be enough to log us in on older sites
-        const response = await fetch(`https://${formData.get('sitename')}/login/index.php`, {
+        let response = await fetch(`https://${formData.get('sitename')}/login/index.php`, {
             method: 'POST',
             body: formData,
             credentials: 'include'
         })
-        const body = await response.text()
+        let body = await response.text()
         let doc = new DOMParser().parseFromString(body, 'text/html')
 
         // Every Moodle site has a class on every page that is the domain with the dots replaced by dashes
@@ -37,12 +37,12 @@ chrome.runtime.onMessage.addListener(
                 const logintoken = doc.querySelector('input[name="logintoken"]').value
                 formData.append('logintoken', logintoken)
 
-                const response = await fetch(`https://${formData.get('sitename')}/login/index.php`, {
+                response = await fetch(`https://${formData.get('sitename')}/login/index.php`, {
                     method: 'POST',
                     body: formData,
                     credentials: 'include'
                 })
-                const body = await response.text()
+                body = await response.text()
                 doc = new DOMParser().parseFromString(body, 'text/html')
 
                 // Check again: if we get back a Moodle page without an invalid login message, *we're in* (hacker voice)
@@ -53,6 +53,20 @@ chrome.runtime.onMessage.addListener(
             }
         }
 
+        // Ok, if we got here we probably didn't get in, but let's do one more GET request to see if we're logged in anyway
+        // Try to access the /my page and see if we haven't been redirected
+        response = await fetch(`https://${formData.get('sitename')}/my`, {
+            method: 'GET',
+            credentials: 'include'
+        })
+        body = await response.text()
+        doc = new DOMParser().parseFromString(body, 'text/html')
+
+        if (doc.querySelector('#page-my-index')) {
+            chrome.tabs.create({ url: `https://${formData.get('sitename')}`})
+            return true
+        }
+        
         return false
     }
 )
