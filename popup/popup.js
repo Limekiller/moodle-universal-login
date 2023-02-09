@@ -23,7 +23,8 @@ document.querySelector(".loginButton").addEventListener('click', e => {
             chrome.notifications.create({
                 type: "basic",
                 title: "Login failed!",
-                message: "It doesn't look like those credentials worked for that site, sorry!"
+                message: "It doesn't look like those credentials worked for that site, sorry!",
+                iconUrl: "/icons/icon32.png"
             });
         }
     })
