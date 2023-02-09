@@ -1,3 +1,13 @@
+document.querySelector("#sitename").addEventListener('change', e => {
+    e.target.value = e.target.value.replace('http://', '').replace('https://', '').split('/')[0]
+})
+
+document.querySelector("#password").addEventListener('keyup', e => {
+    if (e.key == "Enter") {
+        document.querySelector('.loginButton').click()
+    }
+})
+
 document.querySelector(".loginButton").addEventListener('click', e => {
 
     document.querySelector('body').classList.add('loading')
