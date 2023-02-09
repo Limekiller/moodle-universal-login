@@ -3,6 +3,11 @@
 }
 body {
     background: #fff6ed;
+    transition: all 0.2s ease;
+}
+body.loading {
+    pointer-events: none;
+    opacity: 0.5;
 }
 .formContainer {
     display: flex;

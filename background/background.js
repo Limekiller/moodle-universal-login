@@ -1,6 +1,10 @@
 chrome.runtime.onMessage.addListener(
-    async (formData, sender, onSuccess) => {
-        console.log(formData)
+    async (credentials, sender, onSuccess) => {
+
+        let formData = new FormData()
+        for (let item in credentials) {
+            formData.append(item, credentials[item])
+        }
 
         // Send initial post request to Moodle site with credentials
         // This might be enough to log us in on older sites

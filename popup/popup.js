@@ -1,13 +1,14 @@
 document.querySelector(".loginButton").addEventListener('click', e => {
 
-    let formData = new FormData()
+    document.querySelector('body').classList.add('loading')
+    let credentials = {}
     const credentialArray = ['sitename', 'username', 'password']
-
-    for (credentialType of credentialArray) {
-        formData.append(credentialType, document.querySelector(`#${credentialType}`).value)
+    for (let credentialType of credentialArray) {
+        credentials[credentialType] = document.querySelector(`#${credentialType}`).value
     }
 
-    chrome.runtime.sendMessage(formData, data => {
+    chrome.runtime.sendMessage(credentials, data => {
+        document.querySelector('body').classList.remove('loading')
         if (!data) {
             chrome.notifications.create({
                 type: "basic",
