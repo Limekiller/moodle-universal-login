@@ -1,0 +1,16 @@
+{
+  "name": "Universal Moodle Login",
+  "version": "1.0",
+  "description": "Log into any Moodle site, anywhere",
+
+  "browser_action": {
+    "default_popup": "popup/popup.html"
+  },
+
+  "background": {
+    "scripts": ["background/background.js"]
+  },
+  "permissions": ["webRequest", "notifications", "<all_urls>"],
+
+  "manifest_version": 2
+}
