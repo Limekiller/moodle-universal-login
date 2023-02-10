@@ -1,4 +1,11 @@
 chrome.runtime.onMessage.addListener((credentials, sender, sendResponse) => {
+    // Clear all cookies on the domain first so we can log in anew
+    chrome.cookies.getAll({domain: credentials['sitename']}, function(cookies) {
+        for(let i = 0; i < cookies.length; i++) {
+            chrome.cookies.remove({url: "https://" + cookies[i].domain  + cookies[i].path, name: cookies[i].name});
+        }
+    });
+
     processCredentials(credentials).then(response => sendResponse(response))
     return true
 })
@@ -11,7 +18,7 @@ const processCredentials = async credentials => {
 
     // Send initial post request to Moodle site with credentials
     // This might be enough to log us in on older sites
-    let response = await fetch(`https://${formData.get('sitename')}/login/index.php`, {
+    let response = await fetch(`https://${formData.get('sitename')}/login/index.php?saml=no&nosso=true`, {
         method: 'POST',
         body: formData,
         credentials: 'include'
@@ -40,7 +47,7 @@ const processCredentials = async credentials => {
             const logintoken = doc.querySelector('input[name="logintoken"]').value
             formData.append('logintoken', logintoken)
 
-            response = await fetch(`https://${formData.get('sitename')}/login/index.php`, {
+            response = await fetch(`https://${formData.get('sitename')}/login/index.php?saml=no&nosso=true`, {
                 method: 'POST',
                 body: formData,
                 credentials: 'include'

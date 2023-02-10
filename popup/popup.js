@@ -23,7 +23,7 @@ document.querySelector(".loginButton").addEventListener('click', e => {
             chrome.notifications.create({
                 type: "basic",
                 title: "Login failed!",
-                message: "It doesn't look like those credentials worked for that site, sorry!",
+                message: "Failed to authenticate. Either the credentials were wrong or this site isn't working with the extension at this time.",
                 iconUrl: "/icons/icon32.png"
             });
         }
