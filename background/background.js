@@ -1,13 +1,15 @@
-chrome.runtime.onMessage.addListener((credentials, sender, sendResponse) => {
-    // Clear all cookies on the domain first so we can log in anew
-    chrome.cookies.getAll({domain: credentials['sitename']}, function(cookies) {
-        for(let i = 0; i < cookies.length; i++) {
-            chrome.cookies.remove({url: "https://" + cookies[i].domain  + cookies[i].path, name: cookies[i].name});
-        }
-    });
+chrome.runtime.onConnect.addListener(port => {
+    port.onMessage.addListener(data => {
+        // Remove all existing cookies before attempting to log in, so we can log in anew
+        chrome.cookies.getAll({ domain: data.credentials['sitename'] }, function (cookies) {
+            for (let i = 0; i < cookies.length; i++) {
+                chrome.cookies.remove({ url: "https://" + cookies[i].domain + cookies[i].path, name: cookies[i].name });
+            }
+        });
 
-    processCredentials(credentials).then(response => sendResponse(response))
-    return true
+        processCredentials(data.credentials, port).then(response => port.postMessage({ type: 'reportCompletion', data: response }))
+        return true
+    })
 })
 
 /**
@@ -16,7 +18,6 @@ chrome.runtime.onMessage.addListener((credentials, sender, sendResponse) => {
  * @returns {DOMParser}: The parsed DOM object from the fetch response
  */
 const attemptLoginPOST = async urlencoded => {
-
     let response = await fetch(`https://${urlencoded.get('sitename')}/login/index.php`, {
         method: 'POST',
         body: urlencoded,
@@ -31,7 +32,7 @@ const attemptLoginPOST = async urlencoded => {
 }
 
 /**
- * 
+ * Extract a logintoken from a document and reattempt login
  * @param {DOMParser} doc: The DOMParser object to fetch the logintoken from
  * @param {URLSearchParams} urlencoded: The request body params
  * @returns {boolean}: Are we logged in?
@@ -50,8 +51,10 @@ const processLoginToken = async (doc, urlencoded) => {
     doc = await attemptLoginPOST(urlencoded)
 
     // Check again: if we get back a Moodle page without an invalid login message, *we're in* (hacker voice)
-    if (doc.querySelector(`.${verificationKey}`) && !doc.body.innerHTML.includes('Invalid login')) {
-        chrome.tabs.create({ url: `https://${urlencoded.get('sitename')}`})
+    if (doc.querySelector(`.${verificationKey}`)
+      && !doc.body.innerHTML.includes('Invalid login')
+      && !doc.body.innerHTML.includes('You are not logged in')) {
+        chrome.tabs.create({ url: `https://${urlencoded.get('sitename')}` })
         return true
     }
 
@@ -59,11 +62,11 @@ const processLoginToken = async (doc, urlencoded) => {
 }
 
 /**
- * 
+ * Main login function
  * @param {object} credentials: A dictionary of credentials to turn into a URLSearchParams object
  * @returns {boolean}: Were we able to login?
  */
-const processCredentials = async credentials => {
+const processCredentials = async (credentials, port = null) => {
     let urlencoded = new URLSearchParams()
     for (let item in credentials) {
         urlencoded.append(item, credentials[item])
@@ -75,15 +78,18 @@ const processCredentials = async credentials => {
 
     // Send initial post request to Moodle site with credentials
     // This might be enough to log us in on older sites
+    port.postMessage({ type: 'reportProgress', data: 10 })
     let doc = await attemptLoginPOST(urlencoded)
+    port.postMessage({ type: 'reportProgress', data: 25 })
 
     // If we're on a Moodle site,
     if (doc.querySelector(`.${verificationKey}`)) {
         // and there's no logintoken on the page
         if (!doc.querySelector('input[name="logintoken"]')) {
+            port.postMessage({ type: 'reportProgress', data: 100 })
             // and there's no invalid login message, we must be logged in!
             if (!doc.body.innerHTML.includes('Invalid login')) {
-                chrome.tabs.create({ url: `https://${urlencoded.get('sitename')}`})
+                chrome.tabs.create({ url: `https://${urlencoded.get('sitename')}` })
                 return true
             } else {
                 // oh no, there is an "invalid login" message, I guess it didn't work
@@ -93,8 +99,11 @@ const processCredentials = async credentials => {
             // We're on a Moodle page, but it's a login page with a logintoken. Let's grab that and try re-POSTing the request
             let loggedIn = await processLoginToken(doc, urlencoded)
             if (loggedIn) {
+                port.postMessage({ type: 'reportProgress', data: 100 })
                 return true
             }
+
+            port.postMessage({ type: 'reportProgress', data: 75 })
         }
     } else {
         // We didn't even get a Moodle page when POSTing to the login page. Let's try a GET request and go from there?
@@ -102,8 +111,12 @@ const processCredentials = async credentials => {
         let body = await response.text()
         let doc = new DOMParser().parseFromString(body, 'text/html')
 
+        port.postMessage({ type: 'reportProgress', data: 33 })
         let loggedIn = await processLoginToken(doc, urlencoded)
+        port.postMessage({ type: 'reportProgress', data: 75 })
+
         if (loggedIn) {
+            port.postMessage({ type: 'reportProgress', data: 100 })
             return true
         }
     }
@@ -114,10 +127,12 @@ const processCredentials = async credentials => {
     body = await response.text()
     doc = new DOMParser().parseFromString(body, 'text/html')
 
+    port.postMessage({ type: 'reportProgress', data: 100 })
+
     if (doc.querySelector('#page-my-index')) {
-        chrome.tabs.create({ url: `https://${urlencoded.get('sitename')}`})
+        chrome.tabs.create({ url: `https://${urlencoded.get('sitename')}` })
         return true
     }
-    
+
     return false
 }
