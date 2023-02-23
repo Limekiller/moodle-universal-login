@@ -107,7 +107,7 @@ const processCredentials = async (credentials, port = null) => {
         }
     } else {
         // We didn't even get a Moodle page when POSTing to the login page. Let's try a GET request and go from there?
-        let response = await fetch(`https://${urlencoded.get('sitename')}/login/index.php?saml=no&nosso=true&username=test`)
+        let response = await fetch(`https://${urlencoded.get('sitename')}/login/index.php?saml=no&nosso=true&username=test&noredirect=1`)
         let body = await response.text()
         let doc = new DOMParser().parseFromString(body, 'text/html')
 
