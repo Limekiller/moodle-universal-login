@@ -1,6 +1,6 @@
 {
   "name": "Universal Moodle Login",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Log into any Moodle site, anywhere",
 
   "browser_action": {
