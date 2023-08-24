@@ -4,6 +4,7 @@
 body {
     background: #fff6ed;
     transition: all 0.2s ease;
+    min-width: 14rem;
 }
 body.loading {
     pointer-events: none;
