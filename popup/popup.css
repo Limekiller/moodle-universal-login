@@ -20,12 +20,20 @@ body.loading {
     display: flex;
     flex-direction: column;
 }
+.flex {
+    display: flex;
+    gap: 0.5rem;
+}
+.currURL {
+    
+}
 input {
     margin-top: 0.25rem;
     padding: 0.5rem;
     border-radius: 0.5rem;
     border: 1px solid #d5d2d2;
     font-size: 1rem;
+    min-width: 0;
 }
 label {
     font-size: 0.75rem;    
