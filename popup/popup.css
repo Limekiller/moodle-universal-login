@@ -25,7 +25,9 @@ body.loading {
     gap: 0.5rem;
 }
 .currURL {
-    
+    font-size: 1.12rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
 }
 input {
     margin-top: 0.25rem;
