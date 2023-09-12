@@ -16,8 +16,12 @@
     <div class="formContainer">
         <div class="formGroup">
             <label for="sitename">Site domain</label>
-            <input type="text" name="sitename" id="sitename">
+            <div class='flex'>
+                <input type="text" name="sitename" id="sitename">
+                <button title='Use domain from current tab' class="currURL"><span style='filter: grayscale(1) brightness(10)'>🌐</span></button>
+            </div>
         </div>
+
         <div class="formGroup">
             <label for="username">Username</label>
             <input type="text" name="username" id="username">

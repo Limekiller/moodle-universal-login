@@ -4,6 +4,7 @@
 body {
     background: #fff6ed;
     transition: all 0.2s ease;
+    min-width: 14rem;
 }
 body.loading {
     pointer-events: none;
@@ -19,12 +20,22 @@ body.loading {
     display: flex;
     flex-direction: column;
 }
+.flex {
+    display: flex;
+    gap: 0.5rem;
+}
+.currURL {
+    font-size: 1.12rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+}
 input {
     margin-top: 0.25rem;
     padding: 0.5rem;
     border-radius: 0.5rem;
     border: 1px solid #d5d2d2;
     font-size: 1rem;
+    min-width: 0;
 }
 label {
     font-size: 0.75rem;    
